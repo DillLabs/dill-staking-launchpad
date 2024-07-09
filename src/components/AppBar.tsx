@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-wrap-multilines */
 import React from 'react';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { FormattedMessage, useIntl } from 'react-intl';

@@ -80,6 +80,7 @@ const WalletButtonSubContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   width: 750px;
+  justify-content: center;
   margin: auto;
   @media only screen and (max-width: ${p => p.theme.screenSizes.large}) {
     width: 400px;
@@ -246,10 +247,12 @@ const _ConnectWalletPage = ({
             const formattedBalance = Number(
               parseFloat(formatEther(amount)).toPrecision(5)
             );
+
             if (formattedBalance !== balanceRef.current) {
               setBalance(formattedBalance);
               // @ts-ignore (type check performed in envVars.ts)
               const requiredBalance = depositKeys.length * PRICE_PER_VALIDATOR;
+
               if (
                 formattedBalance < requiredBalance ||
                 formattedBalance === 0
@@ -327,7 +330,7 @@ const _ConnectWalletPage = ({
 
   const handleSubmit = () => {
     if (workflow === WorkflowStep.CONNECT_WALLET) {
-      dispatchWorkflowUpdate(WorkflowStep.SUMMARY);
+      dispatchWorkflowUpdate(WorkflowStep.CONGRATULATIONS);
     }
   };
 
@@ -416,7 +419,7 @@ const _ConnectWalletPage = ({
                           />
                         </>
                       )}
-                      {!IS_MAINNET && lowBalance && (
+                      {/* {!IS_MAINNET && lowBalance && (
                         <FaucetLink to={FAUCET_URL} primary>
                           <FormattedMessage
                             defaultMessage="Get {TICKER_NAME}"
@@ -425,7 +428,7 @@ const _ConnectWalletPage = ({
                             }}
                           />
                         </FaucetLink>
-                      )}
+                      )} */}
                     </div>
                     <Alert
                       variant={withdrawalAddress ? 'warning' : 'error'}
@@ -474,7 +477,7 @@ const _ConnectWalletPage = ({
                   title="Metamask"
                   error={walletProvider === metamask ? error : undefined}
                 />
-                {!IS_NON_INFURA_TESTNET && (
+                {/* {!IS_NON_INFURA_TESTNET && (
                   <WalletButton
                     invalid={PORTIS_DAPP_ID === ''}
                     selectedWallet={selectedWallet}
@@ -495,14 +498,13 @@ const _ConnectWalletPage = ({
                     title="Fortmatic"
                     error={walletProvider === fortmatic ? error : undefined}
                   />
-                )}
-                <MetamaskHardwareButton />
+                )} */}
+                {/* <MetamaskHardwareButton /> */}
               </WalletButtonSubContainer>
             </Animated>
           </WalletButtonContainer>
         )}
       </Container>
-
       {error && error instanceof NoEthereumProviderError && (
         <MetaMaskError>
           <Text className="mb30">
@@ -524,7 +526,6 @@ const _ConnectWalletPage = ({
           />
         </div>
       )}
-
       <ButtonRow>
         {!walletConnected && (
           <Link to={routesEnum.uploadValidatorPage}>
@@ -542,7 +543,7 @@ const _ConnectWalletPage = ({
             color="blueDark"
           />
         )}
-        <Link to={routesEnum.summaryPage} onClick={handleSubmit}>
+        <Link to={routesEnum.transactionsPage} onClick={handleSubmit}>
           <Button
             width={300}
             rainbow
@@ -561,7 +562,9 @@ const _ConnectWalletPage = ({
 };
 
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
-  dispatchWorkflowUpdate: step => dispatch(updateWorkflow(step)),
+  dispatchWorkflowUpdate: step => {
+    return dispatch(updateWorkflow(step));
+  },
 });
 
 const mapStateToProps = ({

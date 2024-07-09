@@ -20,12 +20,14 @@ export enum NetworkChainId {
   'Mainnet' = 1,
   'Sepolia' = 11155111,
   'Holesky' = 17000,
+  'Andes' = 558329,
 }
 
 export const NetworkChainIdDict: { [id: string]: number } = {
   Mainnet: 1,
   Sepolia: 11155111,
   Holesky: 17000,
+  Andes: 558329,
 };
 
 /*
@@ -37,6 +39,7 @@ const supportedNetworks = [
   NetworkChainId.Mainnet,
   NetworkChainId.Sepolia,
   NetworkChainId.Holesky,
+  NetworkChainId.Andes,
 ];
 
 // FIXME: disabled Portis for now
@@ -45,6 +48,7 @@ const portisSupportedNetworks = [NetworkChainId.Mainnet];
 enum Testnet {
   'Sepolia',
   'Holesky',
+  'Andes',
 }
 
 enum Mainnet {
@@ -55,6 +59,7 @@ export const NetworkNameToChainId: { [key: string]: NetworkChainId } = {
   Holesky: NetworkChainId.Holesky,
   Mainnet: NetworkChainId.Mainnet,
   Sepolia: NetworkChainId.Sepolia,
+  Andes: NetworkChainId.Andes,
 };
 
 export const TARGET_NETWORK_CHAIN_ID = IS_MAINNET
@@ -77,7 +82,7 @@ export const portis: PortisConnector = new PortisConnector({
 
 export const fortmatic: FortmaticConnector = new FortmaticConnector({
   apiKey: FORTMATIC_KEY as string,
-  chainId: IS_MAINNET ? NetworkChainId.Mainnet : NetworkChainId.Holesky,
+  chainId: IS_MAINNET ? NetworkChainId.Mainnet : NetworkChainId.Andes,
   rpcUrl: RPC_URL,
 });
 

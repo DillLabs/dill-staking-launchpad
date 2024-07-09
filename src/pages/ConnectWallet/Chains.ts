@@ -1,4 +1,5 @@
 import { EL_EXPLOER_URL, RPC_URL, NETWORK_NAME } from '../../utils/envVars';
+
 const { ethereum } = window as any;
 
 export const changeToTestnet = async (chainId: number) => {
@@ -12,7 +13,7 @@ export const changeToTestnet = async (chainId: number) => {
           chainName: NETWORK_NAME,
           nativeCurrency: {
             name: 'Testnet Ether',
-            symbol: 'tETH',
+            symbol: 'DILL',
             decimals: 18,
           },
           rpcUrls: [RPC_URL],

@@ -200,6 +200,7 @@ const _TransactionsPage = ({
           </>
         )}
         {depositKeys.length >= 1 && <KeyList />}
+
         <div className="flex center mt30">
           <Button
             fullWidth
@@ -212,20 +213,20 @@ const _TransactionsPage = ({
       </Paper>
 
       <ButtonContainer>
-        <Link to={routesEnum.summaryPage}>
+        <Link to={routesEnum.connectWalletPage}>
           <Button
             width={100}
             label={formatMessage({ defaultMessage: 'Back' })}
           />
         </Link>
-        <Link to={routesEnum.congratulationsPage} onClick={handleSubmit}>
+        {/* <Link to={routesEnum.congratulationsPage} onClick={handleSubmit}>
           <Button
             width={300}
             rainbow
             label={createContinueButtonText()}
             disabled={!oneTxConfirmed}
           />
-        </Link>
+        </Link> */}
       </ButtonContainer>
     </WorkflowPageTemplate>
   );
