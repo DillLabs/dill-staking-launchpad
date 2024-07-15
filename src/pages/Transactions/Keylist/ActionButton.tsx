@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { FormNextLink, FormPreviousLink } from 'grommet-icons';
 import { FormattedMessage, useIntl } from 'react-intl';
+import ReactTooltip from 'react-tooltip';
 import { Text } from '../../../components/Text';
 import { Link } from '../../../components/Link';
 import {
@@ -14,7 +15,6 @@ import {
   EL_TRANSACTION_URL,
   IS_NON_INFURA_TESTNET,
 } from '../../../utils/envVars';
-import ReactTooltip from 'react-tooltip';
 
 const Container = styled.div`
   display: flex;
@@ -97,32 +97,33 @@ export const ActionButton = ({
     );
   }
   if (transactionStatus === TransactionStatus.SUCCEEDED) {
-    return (
-      <div className="flex">
-        <span
-          data-for="beaconchain-warning"
-          data-tip={formatMessage({
-            defaultMessage:
-              'Note: the Beacon Chain may take several minutes to verify your deposit',
-          })}
-        >
-          <ButtonLink
-            to={`${BEACONCHAIN_URL}/validator/0x${pubkey}`}
-            className="mr5"
-            data-tip
-          >
-            Beaconcha.in
-          </ButtonLink>
-        </span>
-        <ReactTooltip id="beaconchain-warning" place="top" effect="solid" />
-        {!IS_NON_INFURA_TESTNET && (
-          // Probably no Bellatrix beaconscan explorer
-          <ButtonLink to={`${BEACONSCAN_URL}/0x${pubkey}`}>
-            Beaconscan
-          </ButtonLink>
-        )}
-      </div>
-    );
+    return null;
+    // return (
+    //   <div className="flex">
+    //     <span
+    //       data-for="beaconchain-warning"
+    //       data-tip={formatMessage({
+    //         defaultMessage:
+    //           'Note: the Beacon Chain may take several minutes to verify your deposit',
+    //       })}
+    //     >
+    //       <ButtonLink
+    //         to={`${BEACONCHAIN_URL}/validator/0x${pubkey}`}
+    //         className="mr5"
+    //         data-tip
+    //       >
+    //         Beaconcha.in
+    //       </ButtonLink>
+    //     </span>
+    //     <ReactTooltip id="beaconchain-warning" place="top" effect="solid" />
+    //     {!IS_NON_INFURA_TESTNET && (
+    //       // Probably no Bellatrix beaconscan explorer
+    //       <ButtonLink to={`${BEACONSCAN_URL}/0x${pubkey}`}>
+    //         Beaconscan
+    //       </ButtonLink>
+    //     )}
+    //   </div>
+    // );
   }
 
   if (

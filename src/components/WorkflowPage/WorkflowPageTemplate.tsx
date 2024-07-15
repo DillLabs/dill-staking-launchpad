@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
+import { useIntl } from 'react-intl';
 import { Heading } from '../Heading';
 import { WorkflowProgressBar } from './WorkflowProgressBar';
 import { AppBar } from '../AppBar';
@@ -11,8 +13,6 @@ import {
 } from '../../styles/styledComponentsTheme';
 import { routesEnum } from '../../Routes';
 import { WorkflowStep } from '../../store/actions/workflowActions';
-import { Helmet } from 'react-helmet';
-import { useIntl } from 'react-intl';
 
 const Content = styled.div`
   width: 100%;
@@ -27,10 +27,7 @@ const Gutter = styled.div`
   justify-content: center;
 `;
 const Background = styled.div`
-  background-image: ${(p: { workflowStep: WorkflowStep }) =>
-    `linear-gradient(to bottom right, ${rainbowLightColors[p.workflowStep]}, ${
-      rainbowBGColors[p.workflowStep]
-    });`};
+  background-color: #eef1f5;
   min-height: 100vh;
 `;
 
@@ -72,7 +69,7 @@ const _WorkflowPageTemplate = ({
   const calculatedWorkflowStep: WorkflowStep = mapPathnameToWorkflowStep(path);
 
   return (
-    <Background workflowStep={calculatedWorkflowStep}>
+    <Background>
       <Helmet>
         <title>{title}</title>
         <meta property="og:title" content={title} />
@@ -81,7 +78,7 @@ const _WorkflowPageTemplate = ({
         <meta property="og:description" content={description} />
         <meta property="twitter:description" content={description} />
       </Helmet>
-      <AppBar />
+      {/* <AppBar /> */}
       <WorkflowProgressBar workflow={calculatedWorkflowStep} />
       <Gutter>
         <Content>

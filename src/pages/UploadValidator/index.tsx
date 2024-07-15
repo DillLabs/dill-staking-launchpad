@@ -198,25 +198,27 @@ const _UploadValidatorPage = ({
 
               // perform double deposit check
               try {
-                const existingDeposits = await getExistingDepositsForPubkeys(
-                  fileData
-                );
-                const existingDepositPubkeys = existingDeposits.data.flatMap(
-                  x => x.publickey.substring(2)
-                );
-                (fileData as DepositKeyInterface[]).forEach(async file => {
-                  if (existingDepositPubkeys.includes(file.pubkey)) {
-                    dispatchDepositStatusUpdate(
-                      file.pubkey,
-                      DepositStatus.ALREADY_DEPOSITED
-                    );
-                  } else {
-                    dispatchDepositStatusUpdate(
-                      file.pubkey,
-                      DepositStatus.READY_FOR_DEPOSIT
-                    );
-                  }
-                });
+                // const existingDeposits = await getExistingDepositsForPubkeys(
+                //   fileData
+                // );
+                // const existingDepositPubkeys = existingDeposits.data.flatMap(
+                //   x => {
+                //     return x.publickey.substring(2);
+                //   }
+                // );
+                // (fileData as DepositKeyInterface[]).forEach(async file => {
+                //   if (existingDepositPubkeys.includes(file.pubkey)) {
+                //     dispatchDepositStatusUpdate(
+                //       file.pubkey,
+                //       DepositStatus.ALREADY_DEPOSITED
+                //     );
+                //   } else {
+                //     dispatchDepositStatusUpdate(
+                //       file.pubkey,
+                //       DepositStatus.READY_FOR_DEPOSIT
+                //     );
+                //   }
+                // });
               } catch (error) {
                 dispatchBeaconChainAPIStatusUpdate(BeaconChainStatus.DOWN);
               }
@@ -370,12 +372,6 @@ const _UploadValidatorPage = ({
         </Dropzone>
       </Container>
       <PaddedButtonContainer>
-        <Link to={routesEnum.generateKeysPage}>
-          <Button
-            width={100}
-            label={formatMessage({ defaultMessage: 'Back' })}
-          />
-        </Link>
         <Link to={routesEnum.connectWalletPage} onClick={handleSubmit}>
           <Button
             width={300}

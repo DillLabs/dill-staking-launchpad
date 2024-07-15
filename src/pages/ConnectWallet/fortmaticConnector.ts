@@ -10,6 +10,7 @@ import invariant from 'tiny-invariant';
 const chainIdToNetwork: { [network: number]: string } = {
   1: 'mainnet',
   17000: 'holesky',
+  558329: 'andes',
 };
 
 interface FortmaticConnectorArguments {

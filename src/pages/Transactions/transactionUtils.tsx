@@ -77,7 +77,7 @@ export const handleMultipleTransactions = async (
     // gasLimit: '0x124f8', TODO set gas limit
     gasPrice: web3.utils.toHex(await web3.eth.getGasPrice()),
     from: account as string,
-    value: TX_VALUE,
+    value: `0x${TX_VALUE.toString(16)}`,
   };
 
   const remainingTxs = depositKeys.filter(
