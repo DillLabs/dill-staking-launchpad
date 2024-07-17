@@ -87,14 +87,14 @@ export const WalletButton = ({
   }, [error, active, setShowSpinner]);
 
   const handleClick = async () => {
-    if (IS_NON_INFURA_TESTNET) {
-      await changeToTestnet(TARGET_NETWORK_CHAIN_ID);
-    }
     if (!selectedWallet) {
       setShowSpinner(true);
       setSelectedWallet(walletProvider);
       await activate(walletProvider);
       setSelectedWallet(undefined);
+    }
+    if (IS_NON_INFURA_TESTNET) {
+      await changeToTestnet(TARGET_NETWORK_CHAIN_ID);
     }
   };
 

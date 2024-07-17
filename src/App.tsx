@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
@@ -28,7 +28,24 @@ function getLibrary(provider: any): Web3Provider {
 
 export const history = createBrowserHistory();
 
+let providers: EIP6939.EIP6963ProviderDetail[] = [];
+
 export const App: React.FC = () => {
+  useEffect(() => {
+    function onAnnouncement(event: EIP6939.EIP6963AnnounceProviderEvent) {
+      if (providers.map(p => p.info.uuid).includes(event.detail.info.uuid))
+        return;
+      providers = [...providers, event.detail];
+      (window as any).providers = providers;
+    }
+    window.addEventListener('eip6963:announceProvider', onAnnouncement);
+    window.dispatchEvent(new Event('eip6963:requestProvider'));
+    return window.removeEventListener(
+      'eip6963:announceProvider',
+      onAnnouncement
+    );
+  }, []);
+
   return (
     <Web3ReactProvider getLibrary={getLibrary}>
       <LocalizedRouter history={history}>
