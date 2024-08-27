@@ -6,7 +6,11 @@ import { SendOptions } from 'web3-eth-contract';
 import { prefix0X } from '../../utils/prefix0x';
 import { contractAbi } from '../../contractAbi';
 import { TransactionStatus } from '../../store/actions/depositFileActions';
-import { CONTRACT_ADDRESS, PRICE_PER_VALIDATOR } from '../../utils/envVars';
+import {
+  CONTRACT_ADDRESS,
+  ETHER_TO_GWEI,
+  PRICE_PER_VALIDATOR,
+} from '../../utils/envVars';
 import { DepositKeyInterface } from '../../store/reducers';
 
 const pricePerValidator = new BigNumber(PRICE_PER_VALIDATOR);
@@ -73,11 +77,18 @@ export const handleMultipleTransactions = async (
   const web3: any = new Web3(walletProvider);
   const contract = new web3.eth.Contract(contractAbi, CONTRACT_ADDRESS);
 
+  const { amount } = depositKeys[0];
+
+  // amount 从 deposit json 取
+  const value = new BigNumber(amount / ETHER_TO_GWEI)
+    .multipliedBy(1e18)
+    .toNumber();
+
   const transactionParameters: SendOptions = {
     // gasLimit: '0x124f8', TODO set gas limit
     gasPrice: web3.utils.toHex(await web3.eth.getGasPrice()),
     from: account as string,
-    value: `0x${TX_VALUE.toString(16)}`,
+    value: `0x${value.toString(16)}`,
   };
 
   const remainingTxs = depositKeys.filter(

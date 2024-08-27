@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Dispatch } from 'redux';
 import { Animated } from 'react-animated-css';
 import { connect } from 'react-redux';
+import { CheckBox, TextInput } from 'grommet';
 import { FormattedMessage, useIntl } from 'react-intl';
 import {
   AbstractConnector,
@@ -52,6 +53,7 @@ import {
 import { routeToCorrectWorkflowStep } from '../../utils/RouteToCorrectWorkflowStep';
 import { MetamaskHardwareButton } from './MetamaskHardwareButton';
 import useIntlNetworkName from '../../hooks/useIntlNetworkName';
+import { Code } from '../../components/Code';
 
 // styled components
 const Container = styled.div`
@@ -143,6 +145,16 @@ const MetaMaskError = styled.div`
   margin-top: 0px;
 `;
 
+const InputWrap = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  input {
+    border: 1px solid #f0f4f8;
+  }
+`;
+
 export interface web3ReactInterface {
   activate: (
     connector: AbstractConnectorInterface,
@@ -205,6 +217,8 @@ const _ConnectWalletPage = ({
   }, [error]);
   const balanceRef = useRef<number | null>(null);
   const { formatMessage } = useIntl();
+  const [checked, setChecked] = React.useState(false); // 没有 withdraw address 或者有并且地址一致，需要确认
+  const [confirmAddress, setConfirmAddress] = React.useState('');
 
   // sets balanceRef to always have current balance (to refer to in callbacks)
   balanceRef.current = balance;
@@ -328,6 +342,9 @@ const _ConnectWalletPage = ({
     [withdrawalAddress]
   );
 
+  const isAccountEqualAddress =
+    account?.toLocaleLowerCase() === withdrawalAddress.toLocaleLowerCase();
+
   const handleSubmit = () => {
     if (workflow === WorkflowStep.CONNECT_WALLET) {
       dispatchWorkflowUpdate(WorkflowStep.CONGRATULATIONS);
@@ -430,29 +447,81 @@ const _ConnectWalletPage = ({
                         </FaucetLink>
                       )} */}
                     </div>
-                    <Alert
-                      variant={withdrawalAddress ? 'warning' : 'error'}
-                      className="mt20"
-                    >
-                      {withdrawalAddress ? (
+
+                    {/*  withdrawalAddress 与当前钱包地址相同 */}
+                    {withdrawalAddress && isAccountEqualAddress && (
+                      <Alert variant="warning" className="mt20">
                         <FormattedMessage
                           defaultMessage="The withdrawal address for these validators will be set to {withdrawalAddress}.
                         Make 100% sure you control this address before depositing, as this cannot be changed."
                           values={{
                             withdrawalAddress: (
-                              <span title={withdrawalAddress}>
-                                {withdrawalAddressShort}
-                              </span>
+                              <Code>
+                                <span title={withdrawalAddress}>
+                                  {withdrawalAddress}
+                                </span>
+                              </Code>
                             ),
                           }}
                         />
-                      ) : (
+                      </Alert>
+                    )}
+                    {/*  withdrawalAddress 与当前钱包地址不同 */}
+                    {withdrawalAddress && !isAccountEqualAddress && (
+                      <div>
+                        <Alert variant="error" className="mt20">
+                          <FormattedMessage
+                            defaultMessage="The withdrawal address for these validators will be set to {withdrawalAddress}.
+                        Make 100% sure you control this address before depositing, as this cannot be changed."
+                            values={{
+                              withdrawalAddress: (
+                                <Code>
+                                  <span title={withdrawalAddress}>
+                                    {withdrawalAddressShort}
+                                  </span>
+                                </Code>
+                              ),
+                            }}
+                          />
+                        </Alert>
+
+                        <InputWrap>
+                          <Row>
+                            <Heading
+                              level={3}
+                              size="small"
+                              color="blueDark"
+                              className="mt0"
+                            >
+                              <FormattedMessage defaultMessage="Address" />
+                            </Heading>
+                          </Row>
+                          <div style={{ width: 480 }}>
+                            <TextInput
+                              onChange={e => setConfirmAddress(e.target.value)}
+                            />
+                          </div>
+                        </InputWrap>
+                      </div>
+                    )}
+                    {/* 没有 withdrawalAddress */}
+                    {!withdrawalAddress && (
+                      <Alert variant="error" className="mt20">
                         <FormattedMessage
                           defaultMessage="A withdrawal address has not been set for these validators.
-                        Staked funds and rewards will remain locked until withdrawal credentials are provided."
+                          Staked funds and rewards will remain locked until withdrawal credentials are provided."
                         />
-                      )}
-                    </Alert>
+                      </Alert>
+                    )}
+                    {(!withdrawalAddress || isAccountEqualAddress) && (
+                      <div className="mt20">
+                        <CheckBox
+                          checked={checked}
+                          label="I have understood and agreed"
+                          onChange={event => setChecked(event.target.checked)}
+                        />
+                      </div>
+                    )}
                   </>
                 )}
               </Paper>
@@ -548,10 +617,20 @@ const _ConnectWalletPage = ({
             width={300}
             rainbow
             disabled={
+              // eslint-disable-next-line no-nested-ternary
               !walletProvider ||
               !walletConnected ||
               !networkAllowed ||
-              lowBalance
+              lowBalance ||
+              (!!withdrawalAddress && !isAccountEqualAddress)
+                ? !isAccountEqualAddress
+                  ? // eslint-disable-next-line no-unneeded-ternary
+                    true
+                  : false
+                : false ||
+                  (!withdrawalAddress || isAccountEqualAddress
+                    ? !checked
+                    : false)
             }
             label={formatMessage({ defaultMessage: 'Continue' })}
           />

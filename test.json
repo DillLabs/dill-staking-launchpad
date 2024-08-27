@@ -1,0 +1,11 @@
+[
+  {
+    "pubkey": "a00d5ebe50d6ab93ef0aa087254c3279ad2ebb4f803fff017a9f4d962009a2346ff9128f2c422c44c4198ea91d6f755a",
+    "withdrawal_credentials": "0100000000000000000000005ca0a4920a054ad8c277060d4ba0e220fee8e6a0",
+    "amount": 2500000000000,
+    "signature": "922722641733a6ae2b717ad3af499fb69234877af64e4fb7e2e2bf1e6daf70ab9fd614814ece66adcacb612599b012b41963eb4de4a2929601b622935899649621693b9521b165bec80a311a3a0a5edabc8bf690e7316b4180dd592195ebedbc",
+    "fork_version": "01017551",
+    "network_name": "andes",
+    "deposit_cli_version": "2.7.0"
+  }
+]

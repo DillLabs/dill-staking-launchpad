@@ -1,10 +1,23 @@
-import React, { SyntheticEvent, useCallback, useMemo, useState } from 'react';
+import React, {
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { useDropzone } from 'react-dropzone';
 import { Close } from 'grommet-icons';
+import { JsonEditor as Editor } from 'jsoneditor-react';
+import ace from 'brace';
+import 'brace/mode/json';
+import 'brace/theme/github';
+import 'jsoneditor-react/es/editor.min.css';
+
+import { RadioButtonGroup } from '../../components/RadioGroup';
 import { WorkflowPageTemplate } from '../../components/WorkflowPage/WorkflowPageTemplate';
 import { Paper } from '../../components/Paper';
 import { Button } from '../../components/Button';
@@ -77,6 +90,13 @@ const DeleteBtn = styled.span`
   padding: 3px;
 `;
 
+const EditorContainer = styled.div`
+  margin-top: 20px;
+  .jsoneditor {
+    height: 400px;
+  }
+`;
+
 interface OwnProps {}
 interface StateProps {
   depositKeys: DepositKeyInterface[];
@@ -107,6 +127,8 @@ const _UploadValidatorPage = ({
   const [isFileStaged, setIsFileStaged] = useState(depositKeys.length > 0);
   const [isFileAccepted, setIsFileAccepted] = useState(depositKeys.length > 0);
   const [fileError, setFileError] = useState<React.ReactElement | null>(null);
+  const [type, setType] = useState('upload' as 'upload' | 'input');
+  const [value, setValue] = useState('yourJson');
   const {
     acceptedFiles, // all JSON files will pass this check (including BLS failures
     inputRef,
@@ -165,6 +187,68 @@ const _UploadValidatorPage = ({
     );
   };
 
+  const checkJson = async (fileData: DepositKeyInterface[]) => {
+    if (!fileData) {
+      return;
+    }
+    // perform BLS check
+    if (await validateDepositKey(fileData)) {
+      // add valid files to redux
+      dispatchDepositFileKeyUpdate(
+        fileData.map((file: DepositKeyInterface) => ({
+          ...file,
+          transactionStatus: TransactionStatus.READY, // initialize each file with ready state for transaction
+          depositStatus: DepositStatus.VERIFYING, // assign to verifying status until the pubkey is checked via beaconscan
+        }))
+      );
+
+      // perform double deposit check
+      try {
+        // const existingDeposits = await getExistingDepositsForPubkeys(
+        //   fileData
+        // );
+        // const existingDepositPubkeys = existingDeposits.data.flatMap(
+        //   x => {
+        //     return x.publickey.substring(2);
+        //   }
+        // );
+        // (fileData as DepositKeyInterface[]).forEach(async file => {
+        //   if (existingDepositPubkeys.includes(file.pubkey)) {
+        //     dispatchDepositStatusUpdate(
+        //       file.pubkey,
+        //       DepositStatus.ALREADY_DEPOSITED
+        //     );
+        //   } else {
+        //     dispatchDepositStatusUpdate(
+        //       file.pubkey,
+        //       DepositStatus.READY_FOR_DEPOSIT
+        //     );
+        //   }
+        // });
+
+        setIsFileAccepted(true);
+      } catch (error) {
+        dispatchBeaconChainAPIStatusUpdate(BeaconChainStatus.DOWN);
+      }
+    } else {
+      // file is JSON but did not pass BLS, so leave it "staged" but not "accepted"
+      setIsFileAccepted(false);
+      dispatchDepositFileKeyUpdate([]);
+      flushDropzoneCache();
+
+      // there are a couple special cases that can occur
+      const { fork_version: forkVersion } = fileData?.[0] || {};
+      const hasCorrectStructure = checkJsonStructure(fileData[0] || {});
+      if (
+        hasCorrectStructure &&
+        forkVersion !== GENESIS_FORK_VERSION.toString()
+      ) {
+        // file doesn't match the correct network
+        handleWrongNetwork();
+      }
+    }
+  };
+
   const onFileDrop = (jsonFiles: Array<any>, rejectedFiles: Array<any>) => {
     if (rejectedFiles?.length) {
       setFileError(
@@ -185,60 +269,7 @@ const _UploadValidatorPage = ({
         if (event.target) {
           try {
             const fileData: any[] = JSON.parse(event.target.result as string);
-            // perform BLS check
-            if (await validateDepositKey(fileData as DepositKeyInterface[])) {
-              // add valid files to redux
-              dispatchDepositFileKeyUpdate(
-                fileData.map((file: DepositKeyInterface) => ({
-                  ...file,
-                  transactionStatus: TransactionStatus.READY, // initialize each file with ready state for transaction
-                  depositStatus: DepositStatus.VERIFYING, // assign to verifying status until the pubkey is checked via beaconscan
-                }))
-              );
-
-              // perform double deposit check
-              try {
-                // const existingDeposits = await getExistingDepositsForPubkeys(
-                //   fileData
-                // );
-                // const existingDepositPubkeys = existingDeposits.data.flatMap(
-                //   x => {
-                //     return x.publickey.substring(2);
-                //   }
-                // );
-                // (fileData as DepositKeyInterface[]).forEach(async file => {
-                //   if (existingDepositPubkeys.includes(file.pubkey)) {
-                //     dispatchDepositStatusUpdate(
-                //       file.pubkey,
-                //       DepositStatus.ALREADY_DEPOSITED
-                //     );
-                //   } else {
-                //     dispatchDepositStatusUpdate(
-                //       file.pubkey,
-                //       DepositStatus.READY_FOR_DEPOSIT
-                //     );
-                //   }
-                // });
-              } catch (error) {
-                dispatchBeaconChainAPIStatusUpdate(BeaconChainStatus.DOWN);
-              }
-            } else {
-              // file is JSON but did not pass BLS, so leave it "staged" but not "accepted"
-              setIsFileAccepted(false);
-              dispatchDepositFileKeyUpdate([]);
-              flushDropzoneCache();
-
-              // there are a couple special cases that can occur
-              const { fork_version: forkVersion } = fileData[0] || {};
-              const hasCorrectStructure = checkJsonStructure(fileData[0] || {});
-              if (
-                hasCorrectStructure &&
-                forkVersion !== GENESIS_FORK_VERSION.toString()
-              ) {
-                // file doesn't match the correct network
-                handleWrongNetwork();
-              }
-            }
+            await checkJson(fileData);
           } catch (e) {
             // possible error example: json is invalid or empty so it cannot be parsed
             // TODO think about other possible errors here, and consider if we might want to set "isFileStaged"
@@ -322,6 +353,10 @@ const _UploadValidatorPage = ({
       );
     }
 
+    if (type === 'input') {
+      return '';
+    }
+
     return (
       <div>
         <FormattedMessage defaultMessage="Drag file to upload or browse" />
@@ -334,7 +369,24 @@ const _UploadValidatorPage = ({
     fileError,
     depositFileName,
     handleFileDelete,
+    type,
+    value,
   ]);
+
+  useEffect(() => {
+    setFileError(null);
+    checkJson((value as unknown) as DepositKeyInterface[]);
+  }, [value]);
+
+  useEffect(() => {
+    setValue('yourJson');
+    dispatchDepositFileNameUpdate('');
+    dispatchDepositFileKeyUpdate([]);
+    setFileError(null);
+    setIsFileStaged(false);
+    setIsFileAccepted(false);
+    flushDropzoneCache();
+  }, [type]);
 
   if (workflow < WorkflowStep.UPLOAD_VALIDATOR_FILE) {
     return routeToCorrectWorkflowStep(workflow);
@@ -342,34 +394,65 @@ const _UploadValidatorPage = ({
 
   return (
     <WorkflowPageTemplate title="Upload deposit data">
+      <Text className="mb20">
+        <FormattedMessage
+          defaultMessage="Upload the deposit data file you just generated. The {json} is in your {validatorKeys} directory. You can choose to upload the deposit data file or enter the file content."
+          values={{
+            json: <Code>deposit_data-[timestamp].json</Code>,
+            validatorKeys: <Code>./dill/validator_keys</Code>,
+          }}
+        />
+      </Text>
       <Container className="mt20">
-        <Text className="mb20">
-          <FormattedMessage
-            defaultMessage="Upload the deposit data file you just generated. The {json} is in your {validatorKeys} directory."
-            values={{
-              json: <Code>deposit_data-[timestamp].json</Code>,
-              validatorKeys: <Code>./dill/validator_keys</Code>,
-            }}
+        <div style={{ margin: '0 auto' }}>
+          <RadioButtonGroup
+            name="type"
+            options={[
+              { label: 'Upload a file', value: 'upload' },
+              { label: 'Enter the content', value: 'input' },
+            ]}
+            value={type}
+            onChange={event =>
+              setType(event.target.value as 'input' | 'upload')
+            }
           />
-        </Text>
-        <Dropzone
-          isFileStaged={isFileStaged}
-          isFileAccepted={isFileAccepted && !fileError}
-          {...getRootProps({ isDragActive, isDragAccept, isDragReject })}
-        >
-          <input {...getInputProps()} />
-          <FileUploadAnimation
-            isDragAccept={isDragAccept}
-            isDragReject={isDragReject}
-            isDragActive={isDragActive}
-            isFileStaged={!!(isFileStaged || fileError)}
+        </div>
+        {type === 'upload' && (
+          <Dropzone
+            isFileStaged={isFileStaged}
             isFileAccepted={isFileAccepted && !fileError}
-          />
+            {...getRootProps({ isDragActive, isDragAccept, isDragReject })}
+          >
+            <input {...getInputProps()} />
+            <FileUploadAnimation
+              isDragAccept={isDragAccept}
+              isDragReject={isDragReject}
+              isDragActive={isDragActive}
+              isFileStaged={!!(isFileStaged || fileError)}
+              isFileAccepted={isFileAccepted && !fileError}
+            />
 
-          <Text className="mt20" textAlign="center">
-            {renderMessage}
-          </Text>
-        </Dropzone>
+            <Text className="mt20" textAlign="center">
+              {renderMessage}
+            </Text>
+          </Dropzone>
+        )}
+        {type === 'input' && (
+          <EditorContainer>
+            <Editor
+              value={value}
+              onChange={(json: string) => {
+                setValue(json);
+              }}
+              ace={ace}
+              mode={Editor.modes.code}
+              theme="ace/theme/github"
+            />
+            <Text className="mt20" textAlign="center">
+              {renderMessage}
+            </Text>
+          </EditorContainer>
+        )}
       </Container>
       <PaddedButtonContainer>
         <Link to={routesEnum.connectWalletPage} onClick={handleSubmit}>
