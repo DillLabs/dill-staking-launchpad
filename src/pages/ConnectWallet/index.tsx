@@ -623,10 +623,8 @@ const _ConnectWalletPage = ({
               !networkAllowed ||
               lowBalance ||
               (!!withdrawalAddress && !isAccountEqualAddress)
-                ? !isAccountEqualAddress
-                  ? // eslint-disable-next-line no-unneeded-ternary
-                    true
-                  : false
+                ? confirmAddress.toLowerCase() !==
+                  withdrawalAddress.toLowerCase()
                 : false ||
                   (!withdrawalAddress || isAccountEqualAddress
                     ? !checked
