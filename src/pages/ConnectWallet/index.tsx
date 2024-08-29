@@ -217,7 +217,7 @@ const _ConnectWalletPage = ({
   }, [error]);
   const balanceRef = useRef<number | null>(null);
   const { formatMessage } = useIntl();
-  const [checked, setChecked] = React.useState(false); // 没有 withdraw address 或者有并且地址一致，需要确认
+  const [checked, setChecked] = React.useState(false); // There is no withdraw address or there is one and the address is the same, need to be confirmed
   const [confirmAddress, setConfirmAddress] = React.useState('');
 
   // sets balanceRef to always have current balance (to refer to in callbacks)
@@ -448,7 +448,7 @@ const _ConnectWalletPage = ({
                       )} */}
                     </div>
 
-                    {/*  withdrawalAddress 与当前钱包地址相同 */}
+                    {/*  withdrawalAddress is the same as the current wallet address */}
                     {withdrawalAddress && isAccountEqualAddress && (
                       <Alert variant="warning" className="mt20">
                         <FormattedMessage
@@ -493,7 +493,7 @@ const _ConnectWalletPage = ({
                               color="blueDark"
                               className="mt0"
                             >
-                              <FormattedMessage defaultMessage="Address" />
+                              <FormattedMessage defaultMessage="Withdrawal Address" />
                             </Heading>
                           </Row>
                           <div style={{ width: 480 }}>
@@ -504,7 +504,7 @@ const _ConnectWalletPage = ({
                         </InputWrap>
                       </div>
                     )}
-                    {/* 没有 withdrawalAddress */}
+                    {/* no withdrawalAddress */}
                     {!withdrawalAddress && (
                       <Alert variant="error" className="mt20">
                         <FormattedMessage
