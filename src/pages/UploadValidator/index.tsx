@@ -396,7 +396,7 @@ const _UploadValidatorPage = ({
     <WorkflowPageTemplate title="Upload deposit data">
       <Text className="mb20">
         <FormattedMessage
-          defaultMessage="Upload the deposit data file you just generated. The {json} is in your {validatorKeys} directory. You can choose to upload the deposit data file or enter the file content."
+          defaultMessage="The {json} is in your {validatorKeys} directory. You can choose to enter the content or upload a file."
           values={{
             json: <Code>deposit_data-[timestamp].json</Code>,
             validatorKeys: <Code>./dill/validator_keys</Code>,
