@@ -11,11 +11,7 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { useDropzone } from 'react-dropzone';
 import { Close } from 'grommet-icons';
-import { JsonEditor as Editor } from 'jsoneditor-react';
-import ace from 'brace';
-import 'brace/mode/json';
-import 'brace/theme/github';
-import 'jsoneditor-react/es/editor.min.css';
+import { TextArea } from 'grommet';
 
 import { RadioButtonGroup } from '../../components/RadioGroup';
 import { WorkflowPageTemplate } from '../../components/WorkflowPage/WorkflowPageTemplate';
@@ -92,8 +88,8 @@ const DeleteBtn = styled.span`
 
 const EditorContainer = styled.div`
   margin-top: 20px;
-  .jsoneditor {
-    height: 400px;
+  textarea {
+    border: 1px solid #f0f4f8;
   }
 `;
 
@@ -112,6 +108,15 @@ interface DispatchProps {
 }
 type Props = StateProps & DispatchProps & OwnProps;
 
+function isValidJSON(str: string) {
+  try {
+    JSON.parse(str);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 const _UploadValidatorPage = ({
   workflow,
   depositKeys,
@@ -127,8 +132,8 @@ const _UploadValidatorPage = ({
   const [isFileStaged, setIsFileStaged] = useState(depositKeys.length > 0);
   const [isFileAccepted, setIsFileAccepted] = useState(depositKeys.length > 0);
   const [fileError, setFileError] = useState<React.ReactElement | null>(null);
-  const [type, setType] = useState('upload' as 'upload' | 'input');
-  const [value, setValue] = useState('yourJson');
+  const [type, setType] = useState('input' as 'upload' | 'input');
+  const [value, setValue] = useState('');
   const {
     acceptedFiles, // all JSON files will pass this check (including BLS failures
     inputRef,
@@ -354,6 +359,13 @@ const _UploadValidatorPage = ({
     }
 
     if (type === 'input') {
+      if (value && !isValidJSON(value)) {
+        return (
+          <div>
+            <FormattedMessage defaultMessage="Please input the valid json." />
+          </div>
+        );
+      }
       return '';
     }
 
@@ -375,11 +387,15 @@ const _UploadValidatorPage = ({
 
   useEffect(() => {
     setFileError(null);
-    checkJson((value as unknown) as DepositKeyInterface[]);
+    if (isValidJSON(value)) {
+      checkJson((JSON.parse(value) as unknown) as DepositKeyInterface[]);
+    } else {
+      checkJson((value as unknown) as DepositKeyInterface[]);
+    }
   }, [value]);
 
   useEffect(() => {
-    setValue('yourJson');
+    setValue('');
     dispatchDepositFileNameUpdate('');
     dispatchDepositFileKeyUpdate([]);
     setFileError(null);
@@ -408,8 +424,8 @@ const _UploadValidatorPage = ({
           <RadioButtonGroup
             name="type"
             options={[
-              { label: 'Upload a file', value: 'upload' },
               { label: 'Enter the content', value: 'input' },
+              { label: 'Upload a file', value: 'upload' },
             ]}
             value={type}
             onChange={event =>
@@ -439,15 +455,15 @@ const _UploadValidatorPage = ({
         )}
         {type === 'input' && (
           <EditorContainer>
-            <Editor
+            <TextArea
+              style={{ height: 300 }}
+              placeholder="Paste the JSON code here"
               value={value}
-              onChange={(json: string) => {
-                setValue(json);
+              onChange={e => {
+                setValue(e.target.value);
               }}
-              ace={ace}
-              mode={Editor.modes.code}
-              theme="ace/theme/github"
             />
+
             <Text className="mt20" textAlign="center">
               {renderMessage}
             </Text>
