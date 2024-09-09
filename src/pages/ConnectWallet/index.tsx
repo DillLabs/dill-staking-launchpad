@@ -493,12 +493,14 @@ const _ConnectWalletPage = ({
                               color="blueDark"
                               className="mt0"
                             >
-                              <FormattedMessage defaultMessage="Withdrawal Address" />
+                              <FormattedMessage defaultMessage="Type Withdrawal Address" />
                             </Heading>
                           </Row>
                           <div style={{ width: 480 }}>
                             <TextInput
                               onChange={e => setConfirmAddress(e.target.value)}
+                              // Add the following style to make the input border bold
+                              style={{ borderWidth: '3px', borderStyle: 'solid' }}
                             />
                           </div>
                         </InputWrap>
