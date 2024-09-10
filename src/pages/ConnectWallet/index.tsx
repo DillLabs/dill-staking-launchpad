@@ -49,6 +49,7 @@ import {
   TICKER_NAME,
   IS_NON_INFURA_TESTNET,
   FAUCET_URL,
+  ETHER_TO_GWEI,
 } from '../../utils/envVars';
 import { routeToCorrectWorkflowStep } from '../../utils/RouteToCorrectWorkflowStep';
 import { MetamaskHardwareButton } from './MetamaskHardwareButton';
@@ -237,7 +238,8 @@ const _ConnectWalletPage = ({
             parseFloat(formatEther(amount)).toPrecision(5)
           );
           // @ts-ignore (type check performed in envVars.ts)
-          const requiredBalance = depositKeys.length * PRICE_PER_VALIDATOR;
+          const { amount: depositAmount } = depositKeys[0];
+          const requiredBalance = depositAmount / ETHER_TO_GWEI;
 
           setBalance(formattedBalance);
           if (formattedBalance < requiredBalance || formattedBalance === 0) {
@@ -265,7 +267,8 @@ const _ConnectWalletPage = ({
             if (formattedBalance !== balanceRef.current) {
               setBalance(formattedBalance);
               // @ts-ignore (type check performed in envVars.ts)
-              const requiredBalance = depositKeys.length * PRICE_PER_VALIDATOR;
+              const { amount: depositAmount } = depositKeys[0];
+              const requiredBalance = depositAmount / ETHER_TO_GWEI;
 
               if (
                 formattedBalance < requiredBalance ||
@@ -500,7 +503,10 @@ const _ConnectWalletPage = ({
                             <TextInput
                               onChange={e => setConfirmAddress(e.target.value)}
                               // Add the following style to make the input border bold
-                              style={{ borderWidth: '3px', borderStyle: 'solid' }}
+                              style={{
+                                borderWidth: '3px',
+                                borderStyle: 'solid',
+                              }}
                             />
                           </div>
                         </InputWrap>
@@ -620,17 +626,16 @@ const _ConnectWalletPage = ({
             rainbow
             disabled={
               // eslint-disable-next-line no-nested-ternary
+              lowBalance ||
               !walletProvider ||
               !walletConnected ||
               !networkAllowed ||
               lowBalance ||
-              (!!withdrawalAddress && !isAccountEqualAddress)
+              (!!withdrawalAddress && !isAccountEqualAddress
                 ? confirmAddress.toLowerCase() !==
                   withdrawalAddress.toLowerCase()
-                : false ||
-                  (!withdrawalAddress || isAccountEqualAddress
-                    ? !checked
-                    : false)
+                : false) ||
+              (!withdrawalAddress || isAccountEqualAddress ? !checked : false)
             }
             label={formatMessage({ defaultMessage: 'Continue' })}
           />
