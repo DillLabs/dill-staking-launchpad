@@ -496,7 +496,7 @@ const _ConnectWalletPage = ({
                               color="blueDark"
                               className="mt0"
                             >
-                              <FormattedMessage defaultMessage="Type Withdrawal Address" />
+                              <FormattedMessage defaultMessage="Enter Withdrawal Address" />
                             </Heading>
                           </Row>
                           <div style={{ width: 480 }}>
